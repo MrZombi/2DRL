@@ -1,41 +1,41 @@
-# Prerequisites
-*.d
-
-# Compiled Object files
-*.slo
-*.lo
+# C/C++ build artifacts
 *.o
 *.obj
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Linker files
-*.ilk
-
-# Debugger Files
-*.pdb
-
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
-
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
-*.lai
+*.lo
 *.la
 *.a
 *.lib
-
-# Executables
+*.dll
+*.so
+*.dylib
+*.exp
+*.pdb
+*.ilk
 *.exe
-*.out
-*.app
 
-# debug information files
-*.dwo
+# CMake / build directories (CLion/command line)
+CMakeFiles/
+CMakeCache.txt
+cmake-build-*/
+build*/
+_build*/
+Testing/
+CTestTestfile.cmake
+install_manifest.txt
+*.cmake.proxies
+
+# CLion & editors
+.idea/
+.vscode/
+
+# Generated dependencies inside build trees (FetchContent, etc.)
+**/_deps/
+
+# Logs produced at runtime
+logs/**/*.csv
+*.log
+
+# OS cruft
+.DS_Store
+Thumbs.db
+desktop.ini
