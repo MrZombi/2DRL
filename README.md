@@ -1,3 +1,4 @@
-# PacRL
+# 2DRL
 
-## 🚧 Work in Progress
+##2D + DRL
+### 🚧 Work in Progress
