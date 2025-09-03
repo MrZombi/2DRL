@@ -14,7 +14,7 @@ public:
         int score,
         int steps,
         int pellets,
-        int Powerpellets,
+        int power_pellets,
         int ghosts,
         int deaths,
         bool cleared,
