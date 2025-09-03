@@ -1,7 +1,9 @@
 #include "Environment.h"
-#include "raylib.h"
-#include "Renderer.h"
+// Entfernt:
+// #include "raylib.h"
+// #include "Renderer.h"
 #include "Constants.h"
+
 #include <algorithm>
 #include <random>
 #include <filesystem>
@@ -36,9 +38,9 @@ Environment::Environment() : pacman_(Constants::Cols/2, Constants::Rows/2) {
 
     originalMaze_.assign(Constants::Rows, std::vector<int>(Constants::Cols, 0));
     for (int y = 0; y < Constants::Rows; ++y) {
-            for (int x = 0; x < Constants::Cols; ++x) {
-                    originalMaze_[y][x] = LEVEL[y][x];
-            }
+        for (int x = 0; x < Constants::Cols; ++x) {
+            originalMaze_[y][x] = LEVEL[y][x];
+        }
     }
     maze_ = originalMaze_;
 }
@@ -47,13 +49,17 @@ void Environment::setRunInfo(const std::string& agent, const std::string& runId)
     agentName_ = sanitizeAgent_(agent.empty() ? "unknown" : agent);
     runId_     = runId.empty() ? "local-run" : runId;
 
+    if (agentName_ == "sb3" || agentName_ == "SmokeTest") {
+        logger_.reset();
+        return;
+    }
+
     const std::string path = buildLogPath_(agentName_, runId_);
     std::filesystem::create_directories(std::filesystem::path(path).parent_path());
     logger_ = std::make_unique<EpisodeLogger>(path);
 }
 
 std::vector<float> Environment::reset(uint64_t seed) {
-
     rng_.seed(seed);
     stepCounter_      = 0;
     pelletsCollected_ = 0;
@@ -85,10 +91,10 @@ std::vector<float> Environment::reset(uint64_t seed) {
         constexpr int cx = Constants::Cols / 2;
         constexpr int cy = Constants::Rows / 2;
 
-        ghosts_.emplace_back(cx    , cy    , nullptr, nullptr, GhostType::BLINKY);
-        ghosts_.emplace_back(cx - 1, cy    , nullptr, nullptr, GhostType::PINKY);
-        ghosts_.emplace_back(cx + 1, cy    , nullptr, nullptr, GhostType::INKY);
-        ghosts_.emplace_back(cx + 2, cy    , nullptr, nullptr, GhostType::CLYDE);
+        ghosts_.emplace_back(cx    , cy    , GhostType::BLINKY);
+        ghosts_.emplace_back(cx - 1, cy    , GhostType::PINKY);
+        ghosts_.emplace_back(cx + 1, cy    , GhostType::INKY);
+        ghosts_.emplace_back(cx + 2, cy    , GhostType::CLYDE);
 
         for (auto& g : ghosts_) g.frightened = false;
     }
@@ -156,7 +162,7 @@ StepResult Environment::step(int n_ticks) {
                     g.x = Constants::Cols / 2;
                     g.y = Constants::Rows / 2;
                 } else {
-                    gameOver_    = true;
+                    gameOver_     = true;
                     diedLastStep_ = true;
                     ++deathsThisEp_;
                 }
@@ -180,31 +186,29 @@ StepResult Environment::step(int n_ticks) {
         if (gameOver_ || stepCounter_ >= timeoutSteps_) {
             out.done = true;
         }
-
-        maybeRender_();
     }
 
     out.obs = makeObservation_();
 
     if (out.done && logger_) {
-            const int pelletsLeft = pelletsAtStart_ - pelletsCollected_;
-            const bool cleared = (pelletsAtStart_ > 0 && pelletsLeft == 0);
-            const bool timeout = (!cleared && deathsThisEp_ == 0 && stepCounter_ >= timeoutSteps_);
+        const int pelletsLeft = pelletsAtStart_ - pelletsCollected_;
+        const bool cleared = (pelletsAtStart_ > 0 && pelletsLeft == 0);
+        const bool timeout = (!cleared && deathsThisEp_ == 0 && stepCounter_ >= timeoutSteps_);
 
-            auto end = std::chrono::steady_clock::now();
-            long long durationMs = std::chrono::duration_cast<std::chrono::milliseconds>(end - episodeStartTime_).count();
+        auto end = std::chrono::steady_clock::now();
+        long long durationMs = std::chrono::duration_cast<std::chrono::milliseconds>(end - episodeStartTime_).count();
 
-            logger_->logEpisode(
-                runId_, agentName_,
-                currentEpisode_, static_cast<unsigned long long>(currentSeed_),
-                static_cast<float>(pacman_.score),
-                pacman_.score, stepCounter_,
-                pelletsCollected_, powerCollected_,
-                ghostsEaten_, deathsThisEp_,
-                cleared, timeout,
-                frameSkip_, renderEnabled_,
-                durationMs
-            );
+        logger_->logEpisode(
+            runId_, agentName_,
+            currentEpisode_, static_cast<unsigned long long>(currentSeed_),
+            static_cast<float>(pacman_.score),
+            pacman_.score, stepCounter_,
+            pelletsCollected_, powerCollected_,
+            ghostsEaten_, deathsThisEp_,
+            cleared, timeout,
+            frameSkip_, renderEnabled_,
+            durationMs
+        );
     }
     return out;
 }
@@ -297,13 +301,13 @@ std::pair<int,int> Environment::randomFreeCell_() {
     std::uniform_int_distribution<int> distY(1, Constants::Rows - 2);
 
     for (int tries = 0; tries < 10000; ++tries) {
-            int x = distX(rng_);
-            int y = distY(rng_);
-            int c = maze_[y][x];
-            if (c != static_cast<int>(Constants::CellType::Wall) &&
-                c != static_cast<int>(Constants::CellType::Gate)) {
-                    return {x, y};
-                }
+        int x = distX(rng_);
+        int y = distY(rng_);
+        int c = maze_[y][x];
+        if (c != static_cast<int>(Constants::CellType::Wall) &&
+            c != static_cast<int>(Constants::CellType::Gate)) {
+            return {x, y};
+        }
     }
     return {1,1};
 }
@@ -378,7 +382,7 @@ void Environment::updateItemsAndPower_()
                 fruit_.y            = ry;
                 fruit_.type         = 2;
                 fruit_.active       = true;
-                fruit_.respawnTimer = Constants::PickupActiveTime; // "Aktivzeit" der Kirsche
+                fruit_.respawnTimer = Constants::PickupActiveTime;
                 fruit_.replacedCoin = (maze_[ry][rx] == static_cast<int>(Constants::CellType::Coin))
                     ? static_cast<int>(Constants::CellType::Coin) : 0;
                 maze_[ry][rx]       = 0;
@@ -390,39 +394,13 @@ void Environment::updateItemsAndPower_()
     }
 }
 
-void Environment::maybeRender_() {
-    if (!renderEnabled_) return;
-
-    ++renderCounter_;
-    if (renderCounter_ % renderEvery_ != 0) return;
-
-    if (auto* r = renderer_)
-        {
-            RenderState rs;
-            rs.maze      = &maze_;
-            rs.pacman    = &pacman_;
-            rs.ghosts    = &ghosts_;
-            rs.powerTimer= powerTimer_;
-            rs.gameOver  = gameOver_;
-            rs.score     = pacman_.score;
-            rs.pillActive  = pill_.active;  rs.pillX  = pill_.x;  rs.pillY  = pill_.y;
-            rs.fruitActive = fruit_.active; rs.fruitX = fruit_.x; rs.fruitY = fruit_.y;
-            r->draw(rs);
-        }
-}
-
 Action Environment::getAction_() const {
-    if (mode_ == Mode::Agent) return pendingAction_;
-    if (IsKeyDown(KEY_UP)    || IsKeyDown(KEY_W)) return Action::Up;
-    if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D)) return Action::Right;
-    if (IsKeyDown(KEY_DOWN)  || IsKeyDown(KEY_S)) return Action::Down;
-    if (IsKeyDown(KEY_LEFT)  || IsKeyDown(KEY_A)) return Action::Left;
-    return Action::Stay;
+    return pendingAction_;
 }
 
 std::string Environment::sanitizeAgent_(std::string s) {
     for (auto& ch : s) {
-            if (!std::isalnum(static_cast<unsigned char>(ch)) && ch!='_' && ch!='-') ch = '_';
+        if (!std::isalnum(static_cast<unsigned char>(ch)) && ch!='_' && ch!='-') ch = '_';
     }
     if (s.empty()) s = "unknown";
     return s;
