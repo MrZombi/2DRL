@@ -1,4 +1,4 @@
 # 2DRL
 
-##2D + DRL
+## 2D + DRL
 ### 🚧 Work in Progress
