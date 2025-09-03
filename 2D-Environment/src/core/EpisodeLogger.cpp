@@ -9,7 +9,7 @@ void EpisodeLogger::ensureHeader() {
     if (headerWritten) return;
     if (!std::filesystem::exists(filename)) {
             std::ofstream f(filename);
-            f << "run_id,agent,episode,seed,return,score,steps,pellets,Powerpellets,ghosts,deaths,cleared,timeout,"
+            f << "run_id,agent,episode,seed,return,score,steps,pellets,power_pellets,ghosts,deaths,cleared,timeout,"
                  "frameskip,render,duration_ms\n";
     }
     headerWritten = true;
@@ -24,7 +24,7 @@ void EpisodeLogger::logEpisode(
     int score,
     int steps,
     int pellets,
-    int Powerpellets,
+    int power_pellets,
     int ghosts,
     int deaths,
     bool cleared,
@@ -37,7 +37,7 @@ void EpisodeLogger::logEpisode(
     std::ofstream f(filename, std::ios::app);
     f << run_id << "," << agent << "," << episode << "," << seed << ","
       << ep_return << "," << score << "," << steps << ","
-      << pellets << "," << Powerpellets << "," << ghosts << "," << deaths << ","
+      << pellets << "," << power_pellets << "," << ghosts << "," << deaths << ","
       << (cleared ? "True" : "False") << "," << (timeout ? "True" : "False") << ","
       << frameskip << "," << (render ? "True" : "False") << "," << duration_ms << "\n";
 }
