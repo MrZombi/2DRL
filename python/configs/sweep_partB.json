@@ -1,0 +1,51 @@
+{
+  "algos": ["ppo", "a2c", "sac", "td3", "ddpg"],
+  "seeds": [111],
+  "presets": ["baseline", "ambient_hot", "powercap_tight"],
+  "stage": "hard",
+  "n_envs": 36,
+  "steps": 36864000,
+  "normalize_obs": true,
+  "normalize_rew": false,
+
+  "common": {
+    "n_steps": 2048,
+    "batch_size": 4096,
+    "n_epochs": 10,
+    "learning_rate": 0.0002,
+    "gamma": 0.99,
+    "net_arch": "256,256",
+    "ablate": "miss_severity",
+    "save_every": 1000000,
+    "tb_dir": "tb/partB",
+    "csv_file": "logs/partB/episodes.csv"
+  },
+
+  "algo_overrides": {
+    "a2c": {
+      "n_steps": 2048
+    },
+    "sac": {
+      "learning_rate": 0.0002,
+      "buffer_size": 1000000,
+      "learning_starts": 10000,
+      "train_freq": 1,
+      "gradient_steps": 1,
+      "batch_size": 256
+    },
+    "td3": {
+      "learning_rate": 0.0002,
+      "buffer_size": 1000000,
+      "learning_starts": 10000,
+      "train_freq": 1,
+      "batch_size": 256
+    },
+    "ddpg": {
+      "learning_rate": 0.0002,
+      "buffer_size": 1000000,
+      "learning_starts": 10000,
+      "train_freq": 1,
+      "batch_size": 256
+    }
+  }
+}
