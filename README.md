@@ -1,7 +1,8 @@
 # 2DRL
 
 ## 2D + DRL
-### 🚧 Work in Progress
+
+A set of Python-based simulation environments, including one 2D game-like interface, designed for training Deep Reinforcement Learning agents.
 
 ## Code Quality Disclaimer
 
@@ -10,3 +11,5 @@ This code is provided "as is" and does **not conform to any coding standards**. 
 This project is **not actively maintained** and is intended as an archive or reference only.
 
 Use at your own risk.
+
+# 🚧 Work in Progress
